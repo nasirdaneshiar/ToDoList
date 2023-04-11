@@ -100,6 +100,7 @@ passport.use(new GoogleStrategy({
 
 ////////////////////////////////////////////////////////////////////
 let Id = 0;
+let name="";
 
 app.get("/",function(req,res){
     res.render("home");
@@ -122,55 +123,72 @@ app.get('/auth/google/toDoList',
     function(req, res) {
     // Successful authentication, redirect home.
     Id =req.user.id ;
+    console.log(req.user);
     res.redirect('/home');
 });
 
 app.get("/home",function(req,res){
-    day = date.getDate();
     
-    ///////////////
     
-    User.findById(Id,function(err,user){
-        if (user.gitems.length === 0){
-            user.gitems=defaulitems;
-            user.save();
-        }
-        console.log(user.gitems.length);
+    if (req.isAuthenticated()){
+        Id = req.user.id;
+        name = req.user.username;
+        console.log(name);
+        day = date.getDate();
         
-        res.render("list",{listTitle:"Today "+day,listofitems:user.gitems});
+        ///////////////
         
-        
-    });  
+        User.findById(Id,function(err,user){
+            if (user.gitems.length === 0){
+                user.gitems=defaulitems;
+                user.save();
+            }
+            console.log(user.gitems.length);
+            
+            res.render("list",{reqname:name,listTitle:"Today "+day,listofitems:user.gitems});
+            
+            
+        });  
+    } else {
+        res.render("login");
+    }
+    
 });
 
 app.get("/home/:customListName", function(req, res){
-    const customListName = _.capitalize(req.params.customListName);
     
-    User.findById(Id,function(err,user){
-        let found = false;
-        let foundItem;
-        user.sitems.forEach(item => {
-            if(item.name === customListName){
-                found = true;
-                foundItem = item;
-            }
-        })
-        if (!found){
-            const newlist = new List({
-                name: customListName,
-                items : defaulitems
-            });
-            user.sitems.push(newlist);
-            user.save();
-            res.redirect("/home/"+customListName);
-        }else{
-            console.log(foundItem);
-            res.render("list",{listTitle:customListName,listofitems:foundItem.items});
-        }
+    if (req.isAuthenticated()){
+        Id = req.user.id
+        name = req.user.username;
+        const customListName = _.capitalize(req.params.customListName);
         
-    })
+        User.findById(Id,function(err,user){
+            let found = false;
+            let foundItem;
+            user.sitems.forEach(item => {
+                if(item.name === customListName){
+                    found = true;
+                    foundItem = item;
+                }
+            })
+            if (!found){
+                const newlist = new List({
+                    name: customListName,
+                    items : defaulitems
+                });
+                user.sitems.push(newlist);
+                user.save();
+                res.redirect("/home/"+customListName);
+            }else{
+                
+                res.render("list",{reqname:name,listTitle:customListName,listofitems:foundItem.items});
+            }
+            
+        })
     
-    
+    } else {
+        res.render("login");
+    }
     
     
 })
@@ -178,38 +196,6 @@ app.get("/home/:customListName", function(req, res){
 app.get("/aboutme",function(req,res){
     res.render("aboutme");
 })
-
-app.post("/",function(req,res){
-    
-    const item = req.body.newItem;
-    const listName = req.body.list;
-    
-    if (req.body.list === 'Today'){
-        console.log(req.body);
-        User.findById(Id,function(err,user){
-            const newelem= new Item({name:item});
-            user.gitems.push(newelem);
-            user.save();
-            res.redirect("/home");
-        })
-    } else {
-        
-        User.findById(Id,function(err,user){
-            const newelem= new Item({name:item});
-            
-            user.sitems.forEach(item => {
-                if(item.name === listName){
-                    item.items.push(newelem);
-                    user.save();
-                    res.redirect("/home/"+listName );
-                }
-            })
-
-        })
-    }    
- 
-    
-});
 
 app.post("/register",(req,res)=>{
 
@@ -244,9 +230,46 @@ app.post("/login", function(req,res){
             })
         }
     })
+})
+
+
+app.post("/",function(req,res){
+    Id = req.user.id
+    name = req.user.username;
+
+    const item = req.body.newItem;
+    const listName = req.body.list;
+    
+    if (req.body.list === 'Today'){
+        console.log(req.body);
+        User.findById(Id,function(err,user){
+            const newelem= new Item({name:item});
+            user.gitems.push(newelem);
+            user.save();
+            res.redirect("/home");
+        })
+    } else {
+        
+        User.findById(Id,function(err,user){
+            const newelem= new Item({name:item});
+            
+            user.sitems.forEach(item => {
+                if(item.name === listName){
+                    item.items.push(newelem);
+                    user.save();
+                    res.redirect("/home/"+listName );
+                }
+            })
+
+        })
+    }    
+ 
+    
 });
 
 app.post("/delete",function(req,res){
+    Id = req.user.id;
+    name = req.user.username;
     const listName = req.body.listName.split(" ")[0]
     if (listName === 'Today'){
         User.findOneAndUpdate({_id:Id},{$pull : {gitems: {_id : req.body.list}}},function(err, foundresult){
@@ -276,5 +299,7 @@ app.post("/delete",function(req,res){
 app.listen(port, function(){
     console.log("Server is running on port 3000.");
 });
+
+
 
 
