@@ -92,7 +92,7 @@ passport.use(new GoogleStrategy({
   },
   function(accessToken, refreshToken, profile, cb) {
     console.log(profile);
-    User.findOrCreate({ googleId: profile.id }, function (err, user) {
+    User.findOrCreate({ googleId: profile.id, username :profile.displayName }, function (err, user) {
       return cb(err, user);
     });
   }
@@ -209,6 +209,41 @@ app.post("/",function(req,res){
     }    
  
     
+});
+
+app.post("/register",(req,res)=>{
+
+    User.register({username: req.body.username},req.body.password, function(err,user){
+        if (err){
+            console.log(err);
+            res.redirect("/register");
+        }else{
+            passport.authenticate("local")(req,res, function(){
+                Id = req.user.id;
+                res.redirect("/home");
+            })
+        }
+    })
+});
+
+app.post("/login", function(req,res){
+
+    const user = new User({
+        username : req.body.username,
+        password : req.body.password
+    });
+
+    req.login(user, function(err){
+        
+        if (err) {
+            console.log(err);
+        } else {
+            passport.authenticate("local")(req,res,function(){
+                Id = req.user.id;
+                res.redirect("/home");
+            })
+        }
+    })
 });
 
 app.post("/delete",function(req,res){
