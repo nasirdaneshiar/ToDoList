@@ -10,6 +10,10 @@ this is the list of technologies has been used in this project:
   * ejs and bootstrap for frontend
   * google OAuth for authentication
 
+## Launch the web app
+the infinity todolist has been deployed on render.com and this is the link:
+https://infinitytodolist.onrender.com/
+
 ## Contributing
 I welcome any and all contributions! Here are some ways you can get started:
 1. Report bugs: If you encounter any bugs, please let us know. Open up an issue and let us know the problem.
