@@ -1,7 +1,7 @@
 # ToDoList
 
 ## Overview 
-This is the infinity to do list project , it's mainly part of Complete Web Development Bootcamp course on udemy by doctor Angela. Yu but I've added login and register and some google OAuth for authentication and security and everyone can register and plan for his/her work.
+This is the infinity to do list project , it's mainly part of Complete Web Development Bootcamp course on udemy by doctor Angela. Yu but I've added login and register and google OAuth for authentication and security and everyone can register and plan for his/her work.
 
 ## Technologis
 this is the list of technologies has been used in this project:
